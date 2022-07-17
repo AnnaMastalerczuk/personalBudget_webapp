@@ -1,3 +1,15 @@
+<?php 
+session_start();
+
+if ((!isset($_SESSION['isLogin'])) || ($_SESSION['isLogin']==false))
+{
+    header('Location: index.php');
+    exit();
+}
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="pl">
 
@@ -23,22 +35,27 @@
         <div class="row ">
             <div class="col-lg-6 col-md-8 col-11 m-auto bg-light p-4">
                 <h2 class="display-6 text-center">Menu</h2>
+                <?php
+                    if (isset($_SESSION['incomeAdded'])){
+                        echo '<div class="col text-center fs-5 mt-3">'.$_SESSION['incomeAdded'].'</div>';
+				        unset($_SESSION['incomeAdded']);
+                    }
+                    ?>
                 <div class="col text-center fs-5 mt-3">
-                    <a href="incomes.html" class="text-decoration-none text-dark">Dodaj przychód</a>
+                    <a href="incomes.php" class="text-decoration-none text-dark">Dodaj przychód</a>
                 </div>
                 <div class="col text-center fs-5 mt-3">
-                    <a href="expenses.html" class="text-decoration-none text-dark">Dodaj wydatek</a>
+                    <a href="expenses.php" class="text-decoration-none text-dark">Dodaj wydatek</a>
                 </div>
                 <div class="col text-center fs-5 mt-3">
-                    <a href="balance.html" class="text-decoration-none text-dark">Przeglądaj bilans</a>
+                    <a href="balance.php" class="text-decoration-none text-dark">Przeglądaj bilans</a>
                 </div>
                 <div class="col text-center fs-5 mt-3">
-                    <a href="settings.html" class="text-decoration-none text-dark">Ustawienia</a>
+                    <a href="settings.php" class="text-decoration-none text-dark">Ustawienia</a>
                 </div>
                 <div class="col text-center fs-5 mt-3">
-                    <a href="login.html" class="text-decoration-none text-dark">Wyloguj się</a>
-                </div>
- 
+                    <a href="login.php" class="text-decoration-none text-dark">Wyloguj się</a>
+                </div> 
             </div>
         </div>
     </section>

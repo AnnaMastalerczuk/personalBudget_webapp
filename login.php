@@ -37,7 +37,7 @@
 				// if ($password == $row['password'])
 				{
 					$_SESSION['isLogin'] = true;
-					$_SESSION['id'] = $row['id'];
+					$_SESSION['userId'] = $row['id'];
 					$_SESSION['username'] = $row['username'];
 					
 					unset($_SESSION['error']);
