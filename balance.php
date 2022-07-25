@@ -1,3 +1,56 @@
+<?php
+	session_start();
+
+    if ((!isset($_SESSION['isLogin'])) || ($_SESSION['isLogin']==false))
+{
+    header('Location: index.php');
+    exit();
+}
+
+    // $userId = 8;
+    $userId = $_SESSION['userId'];
+
+    $data=date("Y-m-d, H:i", mktime (0,0,0,10,15,1985));
+    $year = date('Y');
+    $month = date('m');
+
+    $currentMonthDaysNumber = date('t', strtotime("MONTH"));
+    $previousMonthDaysNumber = date('t', strtotime("-1 MONTH"));
+
+    if(isset($_POST['dataChoice']))
+    {
+        $dateChoice = $_POST['dataChoice'];
+
+        if($dateChoice == "Bieżący miesiąc")
+        {
+            $endDate = date("Y-m-d", mktime (0,0,0,$month,$currentMonthDaysNumber,$year));
+            $startDate = date("Y-m-d", mktime (0,0,0,$month,'01',$year));
+         
+        } 
+            else if($dateChoice == "Poprzedni miesiąc")
+        {
+            $endDate = date("Y-m-d", mktime (0,0,0,($month-1),$previousMonthDaysNumber,$year));
+            $startDate = date("Y-m-d", mktime (0,0,0,($month-1),'01',$year));  
+
+        }
+        else if ($dateChoice == "Bieżący rok")
+        {
+            $endDate = date("Y-m-d", mktime (0,0,0,'12','31',$year));
+            $startDate = date("Y-m-d", mktime (0,0,0,'01','01',$year));
+
+        }          
+    }
+    else if(isset($_POST['startDate']) && isset($_POST['endDate']))
+    {                           
+        $startDate= $_POST['startDate'];
+        $endDate = $_POST['endDate'];
+        if ($startDate > $endDate){
+            $dataError = false;
+        }
+    }     
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -19,11 +72,13 @@
             <div class="nav-item dropdown">                
                 <p class="nav-link dropdown-toggle text-light fs-5" id="navbarDropdown" role="button"
                     data-bs-toggle="dropdown" aria-expanded="false">Wybierz zakres dat</p>
-                    <form action="balanceMenager.php" method="post" class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <input class="dropdown-item" type="submit" name="currentMonth" value="Bieżący miesiąc"></input>
-                        <input class="dropdown-item" type="submit" name="previousMonth" value="Poprzedni miesiąc"></input>
-                        <input class="dropdown-item" type="submit" name="currentYear" value="Bieżący rok"></input>
-                        <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#exampleModal">Niestandardowy</button>                   
+                    <form method="post" class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <input class="dropdown-item" type="submit" name="dataChoice" value="Bieżący miesiąc"></input>
+                        <input class="dropdown-item" type="submit" name="dataChoice" value="Poprzedni miesiąc"></input>
+                        <input class="dropdown-item" type="submit" name="dataChoice" value="Bieżący rok"></input>
+                        <input class="dropdown-item" data-bs-toggle="modal" data-bs-target="#exampleModal" value="Niestandardowy"></input>
+
+                        <!-- <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#exampleModal">Niestandardowy</button>                    -->
                     </form>
             </div>
 
@@ -35,7 +90,7 @@
                         <div class="modal-header">
                                 <h5 class="modal-title display-6 fs-4" id="exampleModalLabel">Podaj datę początkową i końcową:</h5>
                             </div>
-                            <form action="balanceMenager.php" method="post" class="modal-body">
+                            <form method="post" class="modal-body">
                                 <div>
                                     <label class="form-label" for="start-date">Podaj datę początkową:</label>
                                     <input class="form-control" type="date" id="start-date" name="startDate">
@@ -55,151 +110,151 @@
         </div>
     </nav>
 
-    <section>
-        <div class="container">
-            <div class="text-light mt-2">
-                <p class="fs-5">Suma przychodów: <span>0.00</span></p>
-                <p class="fs-5">Suma wydatków: <span>0.00</span></p>
-                <p class="statement fs-5">Gratulacje. Świetnie zarządzasz finansami!</p>
-                <p class="statement fs-5">Uważaj, wpadasz w długi!</p>
-            </div>
-            <div class="row">
-                <div class="col-md-6 bg-light mb-3">
-                    <h2 class="display-6">Bilans przychodów</h2>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Kategoria</th>
-                                <th scope="col">Suma</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Wynagrodzenie</td>
-                                <td>0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Odsetki bankowe</td>
-                                <td>0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Sprzedaż na Allegro</td>
-                                <td>0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Inne</td>
-                                <td>0.00</td>
-                            </tr>
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td>Suma</td>
-                                <td>0.00</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-                <div class="col-md-6 diagram bg-light mb-3">
-                    <h2 class="display-6">Diagram przychodów</h2>
-                    <div class="piechart m-3">
-                        <img src="img/markus-spiske-jgOkEjVw-KM-unsplash.jpg" class="img-fluid" alt="">
-                    </div>
-                </div>
-                <div class="col-md-6 bg-light mb-3">
-                    <h2 class="display-6">Bilans wydatków</h2>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Kategoria</th>
-                                <th scope="col">Suma</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Jedzenie</td>
-                                <td>0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Mieszkanie</td>
-                                <td>0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Transport</td>
-                                <td>0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Telekomunikacja</td>
-                                <td>0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Opieka zdrowotna</td>
-                                <td>0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Ubrania</td>
-                                <td>0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Higiena</td>
-                                <td>0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Dzieci</td>
-                                <td>0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Rozrywka</td>
-                                <td>0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Wycieczka</td>
-                                <td>0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Szkolenia</td>
-                                <td>0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Książki</td>
-                                <td>0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Oszczędności</td>
-                                <td>0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Emerytura</td>
-                                <td>0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Spłata długów</td>
-                                <td>0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Darowizna</td>
-                                <td>0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Inne wydatki</td>
-                                <td>0.00</td>
-                            </tr>
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td>Suma</td>
-                                <td>0.00</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-                <div class="col-md-6 diagram bg-light mb-3">
-                    <h2 class="display-6">Diagram wydatków</h2>
-                    <div class="piechart m-3"><img src="img/markus-spiske-jgOkEjVw-KM-unsplash.jpg" class="img-fluid"
-                            alt=""></div>
-                </div>
-            </div>
-        </div>
-    </section>
+<?php
+
+    if (isset($dataError) && !$dataError){
+        echo '<div class="container">';
+            echo '<div class="row">';
+                echo '<div class="text-light mt-4 mb-4">';
+                    echo '<h2 class="display-6">Data początkowa musi być wcześniejsza od daty końcowej. Podaj dane ponownie.</h2>';
+                echo '</div>';  
+            echo '</div>'; 
+        echo '</div>'; 
+        unset($dataError);   
+    }
+
+
+require_once "connect.php";
+    mysqli_report(MYSQLI_REPORT_STRICT);
+
+try 
+{
+    $connection = new mysqli($host, $db_user, $db_password, $db_name);
+    
+    if ($connection->connect_errno!=0)
+    {
+        throw new Exception(mysqli_connect_errno());
+        header('Location: balance.php');
+    } 
+    else 
+    {
+
+    if (isset($startDate) && isset($endDate))
+    {
+        $incomesSql = ("SELECT ind.name, SUM(inc.amount) AS sum FROM incomes inc, incomes_category_assigned_to_users ind WHERE inc.user_id='$userId' AND inc.date_of_income>='$startDate' AND inc.date_of_income<='$endDate' AND inc.user_id=ind.user_id AND inc.income_category_assigned_to_user_id = ind.id GROUP BY ind.id");
+        $expensesSql = ("SELECT exd.name, SUM(ex.amount) AS sum FROM expenses ex, expenses_category_assigned_to_users exd WHERE ex.user_id='$userId' AND ex.date_of_expense>='$startDate' AND ex.date_of_expense<='$endDate' AND ex.user_id=exd.user_id AND ex.expense_category_assigned_to_user_id = exd.id GROUP BY exd.id");
+        $resultIncomes = $connection->query($incomesSql);
+        $resultExpenses = $connection->query($expensesSql);
+        $rowNumberIncomes = $resultIncomes->num_rows;
+        $rowNumberExpenses = $resultExpenses->num_rows;
+
+        if($rowNumberIncomes > 0 || $rowNumberExpenses > 0)
+        {
+            $incomesSum = 0;
+            $expensesSum = 0;
+
+            echo '<section>';
+                echo '<div class="container">';
+                    echo '<div class="row">';
+                        echo '<div class="text-light mt-2 mb-2">';
+                        echo '<h2 class="display-6">Bilans od '.$startDate.' do '.$endDate.'</h2>';
+                        echo '</div>';
+                        echo '<div class="col-md-6 bg-light mb-3">';
+                            echo '<h2 class="display-6">Bilans przychodów</h2>';
+                            echo '<table class="table">';
+                                echo '<thead>';
+                                    echo '<tr>';
+                                        echo '<th scope="col">Kategoria</th>';
+                                        echo '<th scope="col">Suma [zł]</th>';
+                                    echo '</tr>';
+                                echo '</thead>';
+                                echo '<tbody>';
+                                while($row = $resultIncomes->fetch_assoc())
+                                {                         
+                                    echo '<tr>';
+                                        echo '<td>'.$row['name'].'</td>';
+                                        echo '<td>'.$row['sum'].'</td>';
+                                    echo '</tr>';   
+                                    $incomesSum += $row['sum'];  
+                                }
+                                $resultIncomes -> free_result();                   
+                                echo '</tbody>';
+                                echo '<tfoot>';
+                                    echo '<tr>';
+                                        echo '<td>Suma</td>';
+                                        echo '<td>'.$incomesSum.'</td>';                                        
+                                    echo '</tr>';
+                                echo '</tfoot>';
+                            echo '</table>';
+                        echo '</div>';
+                        echo '<div class="col-md-6 diagram bg-light mb-3">';
+                            echo '<h2 class="display-6">Diagram przychodów</h2>';
+                            echo '<div class="piechart m-3"><img src="img/markus-spiske-jgOkEjVw-KM-unsplash.jpg" class="img-fluid" alt=""></div>';
+                        echo '</div>';
+
+                        echo '<div class="col-md-6 bg-light mb-3">';
+                        echo '<h2 class="display-6">Bilans wydatków</h2>';
+                        echo '<table class="table">';
+                            echo '<thead>';
+                                echo '<tr>';
+                                    echo '<th scope="col">Kategoria</th>';
+                                    echo '<th scope="col">Suma</th>';
+                                echo '</tr>';
+                            echo '</thead>';
+                            echo '<tbody>';
+                            while($row = $resultExpenses->fetch_assoc())
+                            {                         
+                                echo '<tr>';
+                                    echo '<td>'.$row['name'].'</td>';
+                                    echo '<td>'.$row['sum'].'</td>';
+                                echo '</tr>';   
+                                $expensesSum += $row['sum'];  
+                            }
+                            $resultExpenses -> free_result();                   
+                            echo '</tbody>';
+                            echo '<tfoot>';
+                                echo '<tr>';
+                                    echo '<td>Suma [zł]</td>';
+                                    echo '<td>'.$expensesSum.'</td>';                                    
+                                echo '</tr>';
+                            echo '</tfoot>';
+                        echo '</table>';
+                    echo '</div>';
+                    echo '<div class="col-md-6 diagram bg-light mb-3">';
+                        echo '<h2 class="display-6">Diagram wydatków</h2>';
+                        echo '<div class="piechart m-3"><img src="img/markus-spiske-jgOkEjVw-KM-unsplash.jpg" class="img-fluid" alt=""></div>';
+                    echo '</div>';                
+                echo '</div>';
+                
+                echo '<div class="text-light mt-4">';
+                    if ($incomesSum > $expensesSum){
+                        echo '<p class="statement fs-5">Gratulacje. Świetnie zarządzasz finansami!</p>';
+                    } else
+                    {
+                        echo '<p class="statement fs-5">Uważaj, wpadasz w długi!</p>';
+                    }  
+                    echo '<p class="fs-5">Suma przychodów: <span>'.$incomesSum.' zł</span></p>';
+                    echo '<p class="fs-5">Suma wydatków: <span>'.$expensesSum.' zł</span></p>';                 
+                echo '</div>';
+            echo '</div>';
+        echo '</section>';
+        }
+    }
+}
+    $connection->close();
+    unset($startDate);
+    unset($endDate);
+    unset($incomesSum);
+    unset($expensesSum);
+
+}
+catch(Exception $e)
+    {
+        echo '<span style="color:red;">Błąd serwera! Przepraszamy za niedogodności!</span>';
+        echo '<br />Informacja developerska: '.$e;
+    }
+    
+?>       
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"
         integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous">
