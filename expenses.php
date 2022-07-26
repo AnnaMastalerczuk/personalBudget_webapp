@@ -27,6 +27,7 @@
     <nav class="navbar">
         <div class="container-fluid border-bottom border-light ms-md-5 me-md-5">
             <h1 class="display-5 text-light">Budżet osobisty</h1>
+            <div class="text-light fs-5"><a class="nav-link text-light" href="mainmenu.php">Menu</a></div>
         </div>
     </nav>
 

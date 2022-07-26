@@ -69,16 +69,15 @@
     <nav class="navbar">
         <div class="container-fluid border-bottom border-light ms-md-5 me-md-5">
             <h1 class="display-5 text-light">Budżet osobisty</h1>
+            <div class="text-light fs-5"><a class="nav-link text-light" href="mainmenu.php">Menu</a></div>
             <div class="nav-item dropdown">                
-                <p class="nav-link dropdown-toggle text-light fs-5" id="navbarDropdown" role="button"
-                    data-bs-toggle="dropdown" aria-expanded="false">Wybierz zakres dat</p>
+                <div class="nav-link dropdown-toggle text-light fs-5" id="navbarDropdown" role="button"
+                    data-bs-toggle="dropdown" aria-expanded="false">Wybierz zakres dat</div>
                     <form method="post" class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <input class="dropdown-item" type="submit" name="dataChoice" value="Bieżący miesiąc"></input>
                         <input class="dropdown-item" type="submit" name="dataChoice" value="Poprzedni miesiąc"></input>
                         <input class="dropdown-item" type="submit" name="dataChoice" value="Bieżący rok"></input>
                         <input class="dropdown-item" data-bs-toggle="modal" data-bs-target="#exampleModal" value="Niestandardowy"></input>
-
-                        <!-- <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#exampleModal">Niestandardowy</button>                    -->
                     </form>
             </div>
 
