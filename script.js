@@ -1,3 +1,4 @@
+// przycisk zobacz hasło
 const inputPassword = document.querySelector('#password');
 const eyeBtn = document.querySelector('#togglePassword');
 let flag = true;
@@ -15,3 +16,5 @@ eyeBtn.addEventListener('click', function() {
     eyeBtn.classList.toggle('bi-eye');
 
 });
+
+

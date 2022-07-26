@@ -1,30 +1,35 @@
 <?php
 	session_start();
 
-    if ((!isset($_POST['amount'])) || (!isset($_POST['date'])) || (!isset($_POST['flexRadioDefault'])) || (!isset($_POST['comment'])))
+
+    if ((!isset($_POST['amount'])) || (!isset($_POST['date'])) || (!isset($_POST['payment'])) || (!isset($_POST['category'])) || (!isset($_POST['comment'])))
 	{
-		header('Location: incomes.php');
+		header('Location: expenses.php');
 		exit();
 	}
 
     if(isset($_POST['amount'])){
-        $isIncomeCorrect = true;
+        $isExpenseCorrect = true;
         $amount = round($_POST['amount'], 2);
         $date = $_POST['date'];
-        $checkbox = $_POST['flexRadioDefault'];
+        $selectPayment = $_POST['payment'];
+        $selectCategory = $_POST['category'];
         $comment = $_POST['comment'];
 
+        echo $selectPayment;
+        echo $selectCategory;
+
         if($amount > 1000000){
-            $isIncomeCorrect = false;
+            $isExpenseCorrect = false;
 			$_SESSION['e_amount'] = "Podana kwota musi być mniejsza niż 1 000 000 zł";
-            header('Location: incomes.php');
+            header('Location: expenses.php');
         }
 
         if ((strlen($comment) > 1000))
 		{
-            $isIncomeCorrect = false;
+            $isExpenseCorrect = false;
 			$_SESSION['e_comment'] = "Komentarz może zawierać do 1000 znaków";
-            header('Location: incomes.php');
+            header('Location: expenses.php');
 		}
 
         require_once "connect.php";
@@ -37,15 +42,16 @@
             if ($connection->connect_errno!=0)
 			{
 				throw new Exception(mysqli_connect_errno());
-                header('Location: incomes.php');
+                header('Location: expenses.php');
 			}
             else 
             {
-                if ($isIncomeCorrect == true)
+                if ($isExpenseCorrect == true)
 				{
                 $userId = $_SESSION['userId'];
+                // $userId=8;
 
-				if($connection->query("INSERT INTO incomes VALUES (NULL, '$userId', (SELECT id FROM incomes_category_assigned_to_users WHERE user_id = '$userId' AND name = '$checkbox'), '$amount','$date','$comment')"))
+				if($connection->query("INSERT INTO expenses VALUES (NULL, '$userId', (SELECT id FROM expenses_category_assigned_to_users WHERE user_id = '$userId' AND name = '$selectCategory'), (SELECT id FROM payment_methods_assigned_to_users WHERE user_id = '$userId' AND name = '$selectPayment'), '$amount','$date','$comment')"))
                 {
                     $_SESSION['positionAdded'] = "(Pozycja dodana pomyślnie)";
                     header('Location: mainmenu.php');
@@ -53,7 +59,7 @@
                 else
                 {
                     throw new Exception(mysqli_connect_errno());
-                    header('Location: incomes.php');
+                    header('Location: expenses.php');
                 }
                 }
 					
@@ -66,13 +72,6 @@
 			echo '<span style="color:red;">Błąd serwera! Przepraszamy za niedogodności!</span>';
 			echo '<br />Informacja developerska: '.$e;
 		}
-
-
-
-
-
-
-
 
     }
 

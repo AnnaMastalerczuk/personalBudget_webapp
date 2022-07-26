@@ -36,9 +36,9 @@ if ((!isset($_SESSION['isLogin'])) || ($_SESSION['isLogin']==false))
             <div class="col-lg-6 col-md-8 col-11 m-auto bg-light p-4">
                 <h2 class="display-6 text-center">Menu</h2>
                 <?php
-                    if (isset($_SESSION['incomeAdded'])){
-                        echo '<div class="col text-center fs-5 mt-3">'.$_SESSION['incomeAdded'].'</div>';
-				        unset($_SESSION['incomeAdded']);
+                    if (isset($_SESSION['positionAdded'])){
+                        echo '<div class="col text-center fs-5 mt-3">'.$_SESSION['positionAdded'].'</div>';
+				        unset($_SESSION['positionAdded']);
                     }
                     ?>
                 <div class="col text-center fs-5 mt-3">

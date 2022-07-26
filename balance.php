@@ -238,6 +238,13 @@ try
                 echo '</div>';
             echo '</div>';
         echo '</section>';
+        } else if ($rowNumberIncomes == 0 && $rowNumberExpenses == 0)
+        {
+            echo '<div class="container">';                    
+                echo '<div class="text-light mt-2 mb-2">';
+                    echo '<h2 class="display-6">Brak zapisanych przychodów i wydatków w przedziale czasu od '.$startDate.' do '.$endDate.'</h2>';
+                echo '</div>';
+            echo '</div>';
         }
     }
 }
