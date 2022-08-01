@@ -1,8 +1,6 @@
 <?php
-
-	$host = "localhost";
-	$db_user = "root";
-	$db_password = "";
-	$db_name = "personalbudget";
-
+	$host = "budget.anna-mastalerczuk.profesjonalnyprogramista.pl.mysql.dhosting.pl";
+	$db_user = "eed4id_budgetan";
+	$db_password = "eez4Uu3mu8ru";
+	$db_name = "neek9i_budgetan";
 ?>

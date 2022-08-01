@@ -1,7 +1,6 @@
 <?php
 	session_start();
 
-
     if ((!isset($_POST['amount'])) || (!isset($_POST['date'])) || (!isset($_POST['payment'])) || (!isset($_POST['category'])) || (!isset($_POST['comment'])))
 	{
 		header('Location: expenses.php');
@@ -15,9 +14,6 @@
         $selectPayment = $_POST['payment'];
         $selectCategory = $_POST['category'];
         $comment = $_POST['comment'];
-
-        echo $selectPayment;
-        echo $selectCategory;
 
         if($amount > 1000000){
             $isExpenseCorrect = false;

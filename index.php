@@ -55,6 +55,7 @@ if ((isset($_SESSION['isLogin'])) && ($_SESSION['isLogin']==true))
                     if (isset($_SESSION['error']))
                     {
                         echo '<br />'.$_SESSION['error'];
+                        unset($_SESSION['error']);
                     }
 
                     ?>
