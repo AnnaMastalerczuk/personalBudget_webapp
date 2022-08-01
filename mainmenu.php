@@ -51,7 +51,7 @@ if ((!isset($_SESSION['isLogin'])) || ($_SESSION['isLogin']==false))
                     <a href="balance.php" class="text-decoration-none text-dark">Przeglądaj bilans</a>
                 </div>
                 <div class="col text-center fs-5 mt-3">
-                    <a href="settings.php" class="text-decoration-none text-dark">Ustawienia</a>
+                    <a href="/" class="text-decoration-none text-dark">Ustawienia</a>
                 </div>
                 <div class="col text-center fs-5 mt-3">
                     <a href="logout.php" class="text-decoration-none text-dark">Wyloguj się</a>

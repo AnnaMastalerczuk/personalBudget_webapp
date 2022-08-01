@@ -47,6 +47,10 @@
         if ($startDate > $endDate){
             $dataError = false;
         }
+    }
+    else if (!isset($_POST['dataChoice'])){
+        $endDate = date("Y-m-d", mktime (0,0,0,$month,$currentMonthDaysNumber,$year));
+        $startDate = date("Y-m-d", mktime (0,0,0,$month,'01',$year));
     }     
 
 ?>
@@ -140,8 +144,10 @@ try
 
     if (isset($startDate) && isset($endDate))
     {
-        $incomesSql = ("SELECT ind.name, SUM(inc.amount) AS sum FROM incomes inc, incomes_category_assigned_to_users ind WHERE inc.user_id='$userId' AND inc.date_of_income>='$startDate' AND inc.date_of_income<='$endDate' AND inc.user_id=ind.user_id AND inc.income_category_assigned_to_user_id = ind.id GROUP BY ind.id");
-        $expensesSql = ("SELECT exd.name, SUM(ex.amount) AS sum FROM expenses ex, expenses_category_assigned_to_users exd WHERE ex.user_id='$userId' AND ex.date_of_expense>='$startDate' AND ex.date_of_expense<='$endDate' AND ex.user_id=exd.user_id AND ex.expense_category_assigned_to_user_id = exd.id GROUP BY exd.id");
+        // $incomesSql = ("SELECT ind.name, SUM(inc.amount) AS sum FROM incomes inc, incomes_category_assigned_to_users ind WHERE inc.user_id='$userId' AND inc.date_of_income>='$startDate' AND inc.date_of_income<='$endDate' AND inc.user_id=ind.user_id AND inc.income_category_assigned_to_user_id = ind.id GROUP BY ind.id");
+        // $expensesSql = ("SELECT exd.name, SUM(ex.amount) AS sum FROM expenses ex, expenses_category_assigned_to_users exd WHERE ex.user_id='$userId' AND ex.date_of_expense>='$startDate' AND ex.date_of_expense<='$endDate' AND ex.user_id=exd.user_id AND ex.expense_category_assigned_to_user_id = exd.id GROUP BY exd.id");
+        $incomesSql = ("SELECT ind.name, inc.amount, inc.date_of_income, inc.income_comment FROM incomes inc, incomes_category_assigned_to_users ind WHERE inc.user_id='$userId' AND inc.date_of_income>='$startDate' AND inc.date_of_income<='$endDate' AND inc.user_id=ind.user_id AND inc.income_category_assigned_to_user_id = ind.id");
+        $expensesSql = ("SELECT exd.name, ex.amount, ex.date_of_expense, pay.name, ex.expense_comment FROM expenses ex, expenses_category_assigned_to_users exd, payment_methods_assigned_to_users pay WHERE ex.user_id='$userId' AND ex.date_of_expense>='$startDate' AND ex.date_of_expense<='$endDate' AND ex.user_id=exd.user_id AND ex.user_id=pay.user_id AND ex.payment_method_assigned_to_user_id = pay.id AND ex.expense_category_assigned_to_user_id = exd.id");
         $resultIncomes = $connection->query($incomesSql);
         $resultExpenses = $connection->query($expensesSql);
         $rowNumberIncomes = $resultIncomes->num_rows;
@@ -165,16 +171,31 @@ try
                                     echo '<tr>';
                                         echo '<th scope="col">Kategoria</th>';
                                         echo '<th scope="col">Suma [zł]</th>';
+                                        echo '<th scope="col">Data</th>';
+                                        echo '<th scope="col">Komentarz</th>';
                                     echo '</tr>';
                                 echo '</thead>';
                                 echo '<tbody>';
                                 while($row = $resultIncomes->fetch_assoc())
-                                {                         
+                                {
+                                    $categoryName = $row['name'];
+                                    switch($categoryName){
+                                        case "Salary": $categoryName = "Wypłata";
+                                        break;
+                                        case "Interest": $categoryName = "Odsetki";
+                                        break;
+                                        case "Allegro": $categoryName = "Allegro";
+                                        break;
+                                        case "Another": $categoryName = "Inne";
+                                        break;
+                                    }                       
                                     echo '<tr>';
-                                        echo '<td>'.$row['name'].'</td>';
-                                        echo '<td>'.$row['sum'].'</td>';
+                                        echo '<td>'.$categoryName.'</td>';
+                                        echo '<td>'.$row['amount'].'</td>';
+                                        echo '<td>'.$row['date_of_income'].'</td>';
+                                        echo '<td>'.$row['income_comment'].'</td>';
                                     echo '</tr>';   
-                                    $incomesSum += $row['sum'];  
+                                    $incomesSum += $row['amount'];  
                                 }
                                 $resultIncomes -> free_result();                   
                                 echo '</tbody>';
@@ -198,16 +219,68 @@ try
                                 echo '<tr>';
                                     echo '<th scope="col">Kategoria</th>';
                                     echo '<th scope="col">Suma</th>';
+                                    echo '<th scope="col">Data</th>';
+                                    echo '<th scope="col">Sposób płatności</th>';
+                                    echo '<th scope="col">Komentarz</th>';
                                 echo '</tr>';
                             echo '</thead>';
                             echo '<tbody>';
-                            while($row = $resultExpenses->fetch_assoc())
-                            {                         
+                            while($row = $resultExpenses->fetch_array())
+                            {
+                                $categoryName = $row['0'];
+                                $categoryPay = $row['3'];
+                                switch($categoryName){
+                                    case "Transport": $categoryName = "Transport";
+                                    break;
+                                    case "Books": $categoryName = "Książki";
+                                    break;
+                                    case "Food": $categoryName = "Jedzenie";
+                                    break;
+                                    case "Apartments": $categoryName = "Mieszkanie";
+                                    break;
+                                    case "Telecommunication": $categoryName = "Telekomunikacja";
+                                    break;
+                                    case "Health": $categoryName = "Opieka zdrowotna";
+                                    break;
+                                    case "Clothes": $categoryName = "Ubrania";
+                                    break;
+                                    case "Hygiene": $categoryName = "Higiena";
+                                    break;
+                                    case "Kids": $categoryName = "Dzieci";
+                                    break;
+                                    case "Recreation": $categoryName = "Rozrywka";
+                                    break;
+                                    case "Trip": $categoryName = "Wycieczka";
+                                    break;
+                                    case "Savings": $categoryName = "Oszczedności";
+                                    break;
+                                    case "For Retirement": $categoryName = "Emerytura";
+                                    break;
+                                    case "Debt Repayment": $categoryName = "Spłata długów";
+                                    break;
+                                    case "Gift": $categoryName = "Darowizna";
+                                    break;
+                                    case "Another": $categoryName = "Inne";
+                                    break;
+                                }   
+                                
+                                switch($categoryPay){
+                                    case "Cash": $categoryPay = "Gotówka";
+                                    break;
+                                    case "Debit Card": $categoryPay = "Karta debetowa";
+                                    break;
+                                    case "Credit Card": $categoryPay = "Karta kredytowa";
+                                    break;
+                                }
+
                                 echo '<tr>';
-                                    echo '<td>'.$row['name'].'</td>';
-                                    echo '<td>'.$row['sum'].'</td>';
+                                    echo '<td>'.$categoryName.'</td>';
+                                    echo '<td>'.$row['amount'].'</td>';
+                                    echo '<td>'.$row['date_of_expense'].'</td>';
+                                    echo '<td>'.$categoryPay.'</td>';
+                                    echo '<td>'.$row['expense_comment'].'</td>';
                                 echo '</tr>';   
-                                $expensesSum += $row['sum'];  
+                                $expensesSum += $row['amount'];
                             }
                             $resultExpenses -> free_result();                   
                             echo '</tbody>';
