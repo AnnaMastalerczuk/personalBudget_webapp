@@ -7,10 +7,9 @@
     exit();
 }
 
-    // $userId = 8;
     $userId = $_SESSION['userId'];
 
-    $data=date("Y-m-d, H:i", mktime (0,0,0,10,15,1985));
+    $data = date("Y-m-d, H:i", mktime (0,0,0,10,15,1985));
     $year = date('Y');
     $month = date('m');
 
@@ -51,8 +50,8 @@
     else if (!isset($_POST['dataChoice'])){
         $endDate = date("Y-m-d", mktime (0,0,0,$month,$currentMonthDaysNumber,$year));
         $startDate = date("Y-m-d", mktime (0,0,0,$month,'01',$year));
-    }     
-
+    } 
+    
 ?>
 
 <!DOCTYPE html>
@@ -67,6 +66,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="balance.css">
+     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+ 
 </head>
 
 <body>
@@ -113,22 +115,45 @@
         </div>
     </nav>
 
+    <section>
+        <div class="container">
+            <div class="row">
+
 <?php
 
-    if (isset($dataError) && !$dataError){
-        echo '<div class="container">';
-            echo '<div class="row">';
-                echo '<div class="text-light mt-4 mb-4">';
-                    echo '<h2 class="display-6">Data początkowa musi być wcześniejsza od daty końcowej. Podaj dane ponownie.</h2>';
-                echo '</div>';  
-            echo '</div>'; 
-        echo '</div>'; 
-        unset($dataError);   
-    }
+function changeNameIncome($categoryName)
+{
+    switch($categoryName)
+    {
+        case "Salary": $categoryName = "Wypłata";
+        break;
+        case "Interest": $categoryName = "Odsetki";
+        break;
+        case "Allegro": $categoryName = "Allegro";
+        break;
+        case "Another": $categoryName = "Inne";
+        break;
+    }                  
 
+   return $categoryName;
+
+}
 
 require_once "connect.php";
     mysqli_report(MYSQLI_REPORT_STRICT);
+
+if (isset($dataError) && !$dataError)
+{
+    echo '<div class="container">';
+        echo '<div class="row">';
+            echo '<div class="text-light mt-4 mb-4">';
+                echo '<h2 class="display-6">Data początkowa musi być wcześniejsza od daty końcowej. Podaj dane ponownie.</h2>';
+            echo '</div>';  
+        echo '</div>'; 
+    echo '</div>'; 
+    unset($dataError);   
+} else 
+{
 
 try 
 {
@@ -141,26 +166,17 @@ try
     } 
     else 
     {
-
-    if (isset($startDate) && isset($endDate))
-    {
-        // $incomesSql = ("SELECT ind.name, SUM(inc.amount) AS sum FROM incomes inc, incomes_category_assigned_to_users ind WHERE inc.user_id='$userId' AND inc.date_of_income>='$startDate' AND inc.date_of_income<='$endDate' AND inc.user_id=ind.user_id AND inc.income_category_assigned_to_user_id = ind.id GROUP BY ind.id");
-        // $expensesSql = ("SELECT exd.name, SUM(ex.amount) AS sum FROM expenses ex, expenses_category_assigned_to_users exd WHERE ex.user_id='$userId' AND ex.date_of_expense>='$startDate' AND ex.date_of_expense<='$endDate' AND ex.user_id=exd.user_id AND ex.expense_category_assigned_to_user_id = exd.id GROUP BY exd.id");
+        $incomesSqlChart = ("SELECT ind.name, SUM(inc.amount) AS sum FROM incomes inc, incomes_category_assigned_to_users ind WHERE inc.user_id='$userId' AND inc.date_of_income>='$startDate' AND inc.date_of_income<='$endDate' AND inc.user_id=ind.user_id AND inc.income_category_assigned_to_user_id = ind.id GROUP BY ind.id");
         $incomesSql = ("SELECT ind.name, inc.amount, inc.date_of_income, inc.income_comment FROM incomes inc, incomes_category_assigned_to_users ind WHERE inc.user_id='$userId' AND inc.date_of_income>='$startDate' AND inc.date_of_income<='$endDate' AND inc.user_id=ind.user_id AND inc.income_category_assigned_to_user_id = ind.id");
-        $expensesSql = ("SELECT exd.name, ex.amount, ex.date_of_expense, pay.name, ex.expense_comment FROM expenses ex, expenses_category_assigned_to_users exd, payment_methods_assigned_to_users pay WHERE ex.user_id='$userId' AND ex.date_of_expense>='$startDate' AND ex.date_of_expense<='$endDate' AND ex.user_id=exd.user_id AND ex.user_id=pay.user_id AND ex.payment_method_assigned_to_user_id = pay.id AND ex.expense_category_assigned_to_user_id = exd.id");
+       
         $resultIncomes = $connection->query($incomesSql);
-        $resultExpenses = $connection->query($expensesSql);
-        $rowNumberIncomes = $resultIncomes->num_rows;
-        $rowNumberExpenses = $resultExpenses->num_rows;
+        $resultIncomesChart = $connection->query($incomesSqlChart);
+        
+        $rowNumberIncomes = $resultIncomes->num_rows;       
 
-        if($rowNumberIncomes > 0 || $rowNumberExpenses > 0)
+        if($rowNumberIncomes > 0)
         {
             $incomesSum = 0;
-            $expensesSum = 0;
-
-            echo '<section>';
-                echo '<div class="container">';
-                    echo '<div class="row">';
                         echo '<div class="text-light mt-2 mb-2">';
                         echo '<h2 class="display-6">Bilans od '.$startDate.' do '.$endDate.'</h2>';
                         echo '</div>';
@@ -179,16 +195,8 @@ try
                                 while($row = $resultIncomes->fetch_assoc())
                                 {
                                     $categoryName = $row['name'];
-                                    switch($categoryName){
-                                        case "Salary": $categoryName = "Wypłata";
-                                        break;
-                                        case "Interest": $categoryName = "Odsetki";
-                                        break;
-                                        case "Allegro": $categoryName = "Allegro";
-                                        break;
-                                        case "Another": $categoryName = "Inne";
-                                        break;
-                                    }                       
+                                    $categoryName = changeNameIncome($categoryName);
+
                                     echo '<tr>';
                                         echo '<td>'.$categoryName.'</td>';
                                         echo '<td>'.$row['amount'].'</td>';
@@ -197,7 +205,18 @@ try
                                     echo '</tr>';   
                                     $incomesSum += $row['amount'];  
                                 }
-                                $resultIncomes -> free_result();                   
+                                // $resultIncomes -> free_result();
+
+                                while($row = $resultIncomesChart->fetch_assoc())
+                                {
+                                    $categoryName = $row['name'];
+                                    $categoryName = changeNameIncome($categoryName);
+
+                                    $nameArrayIncomes[] = $categoryName;    
+                                    $sumArrayIncomes[] = $row['sum'];                               
+                                }
+                                // $resultIncomesChart -> free_result();
+
                                 echo '</tbody>';
                                 echo '<tfoot>';
                                     echo '<tr>';
@@ -209,10 +228,112 @@ try
                         echo '</div>';
                         echo '<div class="col-md-6 diagram bg-light mb-3">';
                             echo '<h2 class="display-6">Diagram przychodów</h2>';
-                            echo '<div class="piechart m-3"><img src="img/markus-spiske-jgOkEjVw-KM-unsplash.jpg" class="img-fluid" alt=""></div>';
+                            echo '<div class="piechart m-3">';
+                                echo '<canvas id="myChartIn"></canvas>';
                         echo '</div>';
+                    echo '</div>';
+        }
+        else if ($rowNumberIncomes == 0)
+        {
+            echo '<div class="container">';                    
+                echo '<div class="text-light mt-2 mb-2">';
+                    echo '<h2 class="display-6">Brak zapisanych przychodów w przedziale czasu od '.$startDate.' do '.$endDate.'</h2>';
+                echo '</div>';
+            echo '</div>';
+        }
+    }
+    // $resultIncomes -> free_result(); 
+    // $resultIncomesChart -> free_result(); 
+    // $connection->close();
 
-                        echo '<div class="col-md-6 bg-light mb-3">';
+}
+catch(Exception $e)
+    {
+        echo '<span style="color:red;">Błąd serwera! Przepraszamy za niedogodności!</span>';
+        echo '<br />Informacja developerska: '.$e;
+    }
+?>                        
+
+<?php   
+
+function changeNameExpense($categoryName){
+    switch($categoryName)
+    {
+        case "Transport": $categoryName = "Transport";
+        break;
+        case "Books": $categoryName = "Książki";
+        break;
+        case "Food": $categoryName = "Jedzenie";
+        break;
+        case "Apartments": $categoryName = "Mieszkanie";
+        break;
+        case "Telecommunication": $categoryName = "Telekomunikacja";
+        break;
+        case "Health": $categoryName = "Opieka zdrowotna";
+        break;
+        case "Clothes": $categoryName = "Ubrania";
+        break;
+        case "Hygiene": $categoryName = "Higiena";
+        break;
+        case "Kids": $categoryName = "Dzieci";
+        break;
+        case "Recreation": $categoryName = "Rozrywka";
+        break;
+        case "Trip": $categoryName = "Wycieczka";
+        break;
+        case "Savings": $categoryName = "Oszczedności";
+        break;
+        case "For Retirement": $categoryName = "Emerytura";
+        break;
+        case "Debt Repayment": $categoryName = "Spłata długów";
+        break;
+        case "Gift": $categoryName = "Darowizna";
+        break;
+        case "Another": $categoryName = "Inne";
+        break;
+    }
+
+    return $categoryName;
+}
+
+function changeNamePayment($categoryPay){
+    switch($categoryPay)
+    {
+        case "Cash": $categoryPay = "Gotówka";
+        break;
+        case "Debit Card": $categoryPay = "Karta debetowa";
+        break;
+        case "Credit Card": $categoryPay = "Karta kredytowa";
+        break;
+    }
+
+    return $categoryPay;
+}
+
+    try 
+    {
+        $connection = new mysqli($host, $db_user, $db_password, $db_name);
+        
+        if ($connection->connect_errno!=0)
+        {
+            throw new Exception(mysqli_connect_errno());
+            header('Location: balance.php');
+        } 
+        else 
+        {               
+            $expensesSqlChart = ("SELECT exd.name, SUM(ex.amount) AS sum FROM expenses ex, expenses_category_assigned_to_users exd WHERE ex.user_id='$userId' AND ex.date_of_expense>='$startDate' AND ex.date_of_expense<='$endDate' AND ex.user_id=exd.user_id AND ex.expense_category_assigned_to_user_id = exd.id GROUP BY exd.id");
+            $expensesSql = ("SELECT exd.name, ex.amount, ex.date_of_expense, pay.name, ex.expense_comment FROM expenses ex, expenses_category_assigned_to_users exd, payment_methods_assigned_to_users pay WHERE ex.user_id='$userId' AND ex.date_of_expense>='$startDate' AND ex.date_of_expense<='$endDate' AND ex.user_id=exd.user_id AND ex.user_id=pay.user_id AND ex.payment_method_assigned_to_user_id = pay.id AND ex.expense_category_assigned_to_user_id = exd.id");
+           
+            $resultExpenses = $connection->query($expensesSql);
+            $resultExpensesChart = $connection->query($expensesSqlChart);
+           
+            $rowNumberExpenses = $resultExpenses->num_rows;
+    
+            if($rowNumberExpenses > 0)
+            {           
+                $expensesSum = 0;   
+
+                    echo '<div class="col-md-6 bg-light mb-3">';
                         echo '<h2 class="display-6">Bilans wydatków</h2>';
                         echo '<table class="table">';
                             echo '<thead>';
@@ -229,49 +350,8 @@ try
                             {
                                 $categoryName = $row['0'];
                                 $categoryPay = $row['3'];
-                                switch($categoryName){
-                                    case "Transport": $categoryName = "Transport";
-                                    break;
-                                    case "Books": $categoryName = "Książki";
-                                    break;
-                                    case "Food": $categoryName = "Jedzenie";
-                                    break;
-                                    case "Apartments": $categoryName = "Mieszkanie";
-                                    break;
-                                    case "Telecommunication": $categoryName = "Telekomunikacja";
-                                    break;
-                                    case "Health": $categoryName = "Opieka zdrowotna";
-                                    break;
-                                    case "Clothes": $categoryName = "Ubrania";
-                                    break;
-                                    case "Hygiene": $categoryName = "Higiena";
-                                    break;
-                                    case "Kids": $categoryName = "Dzieci";
-                                    break;
-                                    case "Recreation": $categoryName = "Rozrywka";
-                                    break;
-                                    case "Trip": $categoryName = "Wycieczka";
-                                    break;
-                                    case "Savings": $categoryName = "Oszczedności";
-                                    break;
-                                    case "For Retirement": $categoryName = "Emerytura";
-                                    break;
-                                    case "Debt Repayment": $categoryName = "Spłata długów";
-                                    break;
-                                    case "Gift": $categoryName = "Darowizna";
-                                    break;
-                                    case "Another": $categoryName = "Inne";
-                                    break;
-                                }   
-                                
-                                switch($categoryPay){
-                                    case "Cash": $categoryPay = "Gotówka";
-                                    break;
-                                    case "Debit Card": $categoryPay = "Karta debetowa";
-                                    break;
-                                    case "Credit Card": $categoryPay = "Karta kredytowa";
-                                    break;
-                                }
+                                $categoryName = changeNameExpense($categoryName);
+                                $categoryPay = changeNamePayment($categoryPay);
 
                                 echo '<tr>';
                                     echo '<td>'.$categoryName.'</td>';
@@ -282,7 +362,18 @@ try
                                 echo '</tr>';   
                                 $expensesSum += $row['amount'];
                             }
-                            $resultExpenses -> free_result();                   
+                            // $resultExpenses -> free_result();  
+                            
+                            while($row = $resultExpensesChart->fetch_assoc())
+                                {
+                                    $categoryName = $row['name'];
+                                    $categoryName = changeNameExpense($categoryName);
+                                    
+                                    $nameArrayExpenses[] = $categoryName;    
+                                    $sumArrayExpenses[] = $row['sum'];                                   
+                                }
+                            // $resultExpensesChart -> free_result();
+
                             echo '</tbody>';
                             echo '<tfoot>';
                                 echo '<tr>';
@@ -292,48 +383,141 @@ try
                             echo '</tfoot>';
                         echo '</table>';
                     echo '</div>';
+
                     echo '<div class="col-md-6 diagram bg-light mb-3">';
                         echo '<h2 class="display-6">Diagram wydatków</h2>';
-                        echo '<div class="piechart m-3"><img src="img/markus-spiske-jgOkEjVw-KM-unsplash.jpg" class="img-fluid" alt=""></div>';
-                    echo '</div>';                
-                echo '</div>';
-                
-                echo '<div class="text-light mt-4">';
-                    if ($incomesSum > $expensesSum){
+                        echo '<div class="piechart m-3">';
+                            echo '<canvas id="myChartEx"></canvas>';
+                        echo '</div>';
+                    echo '</div>';
+                    }
+                    else if ($rowNumberExpenses == 0)
+                    {
+                        echo '<div class="container">';                    
+                            echo '<div class="text-light mt-2 mb-2">';
+                                echo '<h2 class="display-6">Brak zapisanych wydatków w przedziale czasu od '.$startDate.' do '.$endDate.'</h2>';
+                            echo '</div>';
+                        echo '</div>';
+                    }
+                }                
+
+                // $connection->close();
+            }
+            catch(Exception $e)
+                {
+                    echo '<span style="color:red;">Błąd serwera! Przepraszamy za niedogodności!</span>';
+                    echo '<br />Informacja developerska: '.$e;
+                }
+
+    ?>
+
+<?php
+    if (!$rowNumberIncomes == 0 && !$rowNumberExpenses == 0)
+    {
+        echo '<div class="text-light mt-4">';        
+                    if ($incomesSum >= $expensesSum){
                         echo '<p class="statement fs-5">Gratulacje. Świetnie zarządzasz finansami!</p>';
                     } else
                     {
                         echo '<p class="statement fs-5">Uważaj, wpadasz w długi!</p>';
                     }  
-                    echo '<p class="fs-5">Suma przychodów: <span>'.$incomesSum.' zł</span></p>';
-                    echo '<p class="fs-5">Suma wydatków: <span>'.$expensesSum.' zł</span></p>';                 
-                echo '</div>';
-            echo '</div>';
-        echo '</section>';
-        } else if ($rowNumberIncomes == 0 && $rowNumberExpenses == 0)
-        {
-            echo '<div class="container">';                    
-                echo '<div class="text-light mt-2 mb-2">';
-                    echo '<h2 class="display-6">Brak zapisanych przychodów i wydatków w przedziale czasu od '.$startDate.' do '.$endDate.'</h2>';
-                echo '</div>';
-            echo '</div>';
-        }
+            echo '<p class="fs-5">Suma przychodów: <span>'.$incomesSum.' zł</span></p>';
+            echo '<p class="fs-5">Suma wydatków: <span>'.$expensesSum.' zł</span></p>';                         
+        echo '</div>';
     }
-}
-    $connection->close();
-    unset($startDate);
-    unset($endDate);
-    unset($incomesSum);
-    unset($expensesSum);
+        unset($incomesSum);
+        unset($startDate);
+        unset($endDate);                
+        unset($expensesSum);
 
-}
-catch(Exception $e)
-    {
-        echo '<span style="color:red;">Błąd serwera! Przepraszamy za niedogodności!</span>';
-        echo '<br />Informacja developerska: '.$e;
+        $resultIncomes -> free_result(); 
+        $resultIncomesChart -> free_result(); 
+        $resultExpenses -> free_result(); 
+        $resultExpensesChart -> free_result();
+        $connection->close();
+
     }
-    
-?>       
+?>
+            </div>
+        </div>
+    </section>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const nameArrayIn = <?php echo json_encode($nameArrayIncomes); ?>;
+const sumArrayIn = <?php echo json_encode($sumArrayIncomes); ?>;
+
+const dataIn = {
+  labels: nameArrayIn,
+  datasets: [{
+    label: 'Diagram przychodów',
+    data: sumArrayIn,
+    backgroundColor: [
+        'rgb(255, 99, 132)',
+        'rgb(154, 205, 50)',
+        'rgb(255, 205, 86)',
+        'rgb(75, 192, 192)' 
+    ],
+    hoverOffset: 4
+  }]
+};
+
+  const configIn = {
+    type: 'pie',
+    data: dataIn,
+  };
+
+  const myChartIn = new Chart(
+    document.getElementById('myChartIn'),
+    configIn
+  );
+
+</script>
+
+<script>
+const nameArrayEx = <?php echo json_encode($nameArrayExpenses); ?>;
+const sumArrayEx = <?php echo json_encode($sumArrayExpenses); ?>;
+
+const dataEx = {
+  labels: nameArrayEx,
+  datasets: [{
+    label: 'Diagram wydatków',
+    data: sumArrayEx,
+    backgroundColor: [
+        'rgb(255, 99, 132)',
+        'rgb(255, 159, 64)',
+        'rgb(255, 205, 86)',
+        'rgb(75, 192, 192)',
+        'rgb(54, 162, 235)',
+        'rgb(153, 102, 255)',
+        'rgb(201, 203, 207)',
+        'rgb(154, 205, 50)',
+        'rgb(107, 142, 35)',
+        'rgb(47 79 79)',
+        'rgb(	112 128 144)',
+        'rgb(192 192 192)',
+        'rgb(165 42 42)',
+        'rgb(160 82 45)',
+        'rgb(65 105 225)',
+        'rgb(100 149 237)'
+    ],
+    hoverOffset: 4
+  }]
+};
+
+  const configEx = {
+    type: 'pie',
+    data: dataEx,
+  };
+
+  const myChartEx = new Chart(
+    document.getElementById('myChartEx'),
+    configEx
+  );
+
+</script>
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"
         integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous">
